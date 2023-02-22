@@ -34,7 +34,6 @@ export class FlashbotBroadcastor {
     this.gasLimit = gasLimit;
   }
 
-  // TODO: make methodArguments compatible with 1 or many arguments
   async tryToWorkOnFlashbots(
     txSigner: Wallet,
     jobContract: Contract,
@@ -71,7 +70,7 @@ export class FlashbotBroadcastor {
     const txs: TransactionRequest[] = await populateTransactions({
       chainId: this.provider.network.chainId,
       contract: jobContract,
-      functionArgs: new Array(this.burstSize).fill(null).map(() => [methodArguments]),
+      functionArgs: [],
       functionName: workMethod,
       options,
     });
