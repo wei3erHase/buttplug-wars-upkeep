@@ -19,7 +19,7 @@ export const BURST_SIZE = 3;
 // Blocks into the future to send our first batch of bundles
 export const FUTURE_BLOCKS = 0;
 
-const provider = new providers.WebSocketProvider(process.env['RPC_MAINNET_HTTPS_URI']!);
+const provider = new providers.JsonRpcBatchProvider(process.env['RPC_MAINNET_HTTPS_URI']!);
 const txSigner = new Wallet(process.env['TX_SIGNER_MAINNET_PRIVATE_KEY']!, provider);
 const bundleSigner = new Wallet(process.env['BUNDLE_SIGNER_MAINNET_PRIVATE_KEY']!, provider);
 
