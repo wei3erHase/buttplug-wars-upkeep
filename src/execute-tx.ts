@@ -18,7 +18,7 @@ export async function executeMove(
 
   const isWorkable = async (strategy: string) => {
     try {
-      await jobContract.callStatic[WORK_METHOD](strategy);
+      await jobContract.connect(txSigner).callStatic[WORK_METHOD](strategy);
       return true;
     } catch (error: unknown) {
       if (error instanceof Error) {
