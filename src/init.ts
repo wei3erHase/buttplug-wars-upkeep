@@ -10,7 +10,7 @@ import 'dotenv/config.js';
 /*============================================================== */
 
 const CHAIN_ID = 1;
-const PRIORITY_FEE_IN_WEI = 1.5e9;
+const PRIORITY_FEE_IN_WEI = 2;
 const GAS_LIMIT = 10e6;
 
 // Flashbots settings
