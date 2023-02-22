@@ -70,7 +70,7 @@ export class FlashbotBroadcastor {
     const txs: TransactionRequest[] = await populateTransactions({
       chainId: this.provider.network.chainId,
       contract: jobContract,
-      functionArgs: [],
+      functionArgs: [[]],
       functionName: workMethod,
       options,
     });
