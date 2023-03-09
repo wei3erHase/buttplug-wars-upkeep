@@ -1,7 +1,6 @@
-import {Flashbots} from '@keep3r-network/keeper-scripting-utils';
+import {FlashbotsBundleProvider} from '@flashbots/ethers-provider-bundle';
+import {BlockListener, FlashbotsBroadcastor} from '@keep3r-network/keeper-scripting-utils';
 import {providers, Wallet, Contract} from 'ethers';
-import {executeMove} from './execute-tx';
-import {FlashbotBroadcastor} from './broadcast/flashbots-broadcastor';
 import {getMainnetSdk} from '@dethcrypto/eth-sdk-client';
 import 'dotenv/config.js';
 
@@ -10,7 +9,7 @@ import 'dotenv/config.js';
 /*============================================================== */
 
 const CHAIN_ID = 1;
-const PRIORITY_FEE_IN_WEI = 2;
+const PRIORITY_FEE_IN_WEI = 2e9;
 const GAS_LIMIT = 10e6;
 
 // Flashbots settings
@@ -23,13 +22,30 @@ const provider = new providers.JsonRpcBatchProvider(process.env['RPC_MAINNET_HTT
 const txSigner = new Wallet(process.env['TX_SIGNER_MAINNET_PRIVATE_KEY']!, provider);
 const bundleSigner = new Wallet(process.env['BUNDLE_SIGNER_MAINNET_PRIVATE_KEY']!, provider);
 
-const buttplugWars = getMainnetSdk(provider).buttplugWars;
+const buttplugWars = getMainnetSdk(txSigner).buttplugWars;
 
 (async () => {
   const FLASHBOTS_RPC: string = process.env['FLASHBOTS_MAINNET_RELAYER']!;
-  const flashbots = await Flashbots.init(txSigner, bundleSigner, provider, [FLASHBOTS_RPC], true, CHAIN_ID);
+  const flashbotsProvider = await FlashbotsBundleProvider.create(provider, bundleSigner, FLASHBOTS_RPC);
+  const flashbotBroadcastor = new FlashbotsBroadcastor(flashbotsProvider, PRIORITY_FEE_IN_WEI, GAS_LIMIT);
 
-  const flashbotBroadcastor = new FlashbotBroadcastor(provider, flashbots, BURST_SIZE, FUTURE_BLOCKS, PRIORITY_FEE_IN_WEI, GAS_LIMIT);
+  const blockListener = new BlockListener(provider);
 
-  await executeMove(txSigner, buttplugWars, provider, flashbotBroadcastor.tryToWorkOnFlashbots.bind(flashbotBroadcastor));
+  blockListener.stream(async (block) => {
+    try{
+      await flashbotBroadcastor.tryToWorkOnFlashbots({
+        jobContract: buttplugWars,
+        workMethod: 'executeMove()',
+        workArguments: [],
+        block
+      });
+    }
+    catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log(`Failed when attempting to call work statically. Message: ${error.message}. Returning.`);
+    }
+    return
+  }
+});
+
 })();
