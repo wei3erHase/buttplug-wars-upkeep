@@ -1,7 +1,6 @@
 import {PrivateBroadcastor, getEnvVariable, BlockListener} from '@keep3r-network/keeper-scripting-utils';
 import {providers, Wallet, Contract} from 'ethers';
 import {getMainnetSdk} from '@dethcrypto/eth-sdk-client';
-import 'dotenv/config.js';
 
 /* ==============================================================/*
                         FLASHBOTS SETUP
@@ -22,7 +21,7 @@ export const FUTURE_BLOCKS = 0;
   // Environment variables usage
   const provider = new providers.JsonRpcProvider(getEnvVariable('RPC_HTTP_MAINNET_URI'));
   const txSigner = new Wallet(getEnvVariable('TX_SIGNER_PRIVATE_KEY'), provider);
-  
+
   // Instantiates the contract
   const buttplugWars = getMainnetSdk(txSigner).buttplugWars;
 
@@ -32,20 +31,17 @@ export const FUTURE_BLOCKS = 0;
   const blockListener = new BlockListener(provider);
 
   blockListener.stream(async (block) => {
-    try{
+    try {
       await broadcastor.tryToWork({
         jobContract: buttplugWars,
         workMethod: 'executeMove',
         workArguments: [],
-        block: block
+        block,
       });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.log(`Failed when attempting to call work statically. Message: ${error.message}. Returning.`);
+      }
     }
-    catch (error: unknown) {
-    if (error instanceof Error) {
-      console.log(`Failed when attempting to call work statically. Message: ${error.message}. Returning.`);
-    }
-    return
-  }
-});
-
+  });
 })();
